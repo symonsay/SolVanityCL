@@ -25,7 +25,7 @@ def check_character(name: str, character: str):
         raise e
 
 
-def get_kernel_source(starts_with: str, ends_with: str):
+def get_kernel_source(starts_with: str, ends_with: str, case: bool):
     PREFIX_BYTES = list(bytes(starts_with.encode()))
     SUFFIX_BYTES = list(bytes(ends_with.encode()))
 
@@ -41,6 +41,12 @@ def get_kernel_source(starts_with: str, ends_with: str):
             source_lines[i] = (
                 f"constant uchar SUFFIX[] = {{{', '.join(map(str, SUFFIX_BYTES))}}};\n"
             )
+            
+        if s.startswith("constant bool IGNORE_CASE_SENSITIVE")
+            if case:
+                source_lines[i] = (f"constant bool IGNORE_CASE_SENSITIVE = true;");
+            else:
+                source_lines[i] = (f"constant bool IGNORE_CASE_SENSITIVE = false;");
 
     source_str = "".join(source_lines)
 
@@ -165,6 +171,13 @@ def cli():
     help="Number of the iteration occupied bits. Recommended 24, 26, 28, 30, 32. The larger the bits, the longer it takes to complete an iteration.",
     default=24,
 )
+@click.option(
+    "--ignore-case",
+    type=bool,
+    help="Ignore case sensitive.",
+    default=False,
+)
+
 @click.pass_context
 def search_pubkey(
     ctx,
@@ -174,6 +187,7 @@ def search_pubkey(
     output_dir: str,
     select_device: bool,
     iteration_bits: int,
+    case: bool,
 ):
     """Search Solana vanity pubkey"""
 
@@ -202,7 +216,7 @@ def search_pubkey(
 
     logging.info(f"Searching with {len(context.devices)} OpenCL devices")
 
-    kernel_source = get_kernel_source(starts_with, ends_with)
+    kernel_source = get_kernel_source(starts_with, ends_with, case)
 
     searcher = Searcher(
         context=context,
