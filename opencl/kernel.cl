@@ -7,6 +7,7 @@ typedef int32_t fe[10];
 
 constant uchar PREFIX[] = {83, 111, 76};
 constant uchar SUFFIX[] = {};
+constant bool IGNORE_CASE_SENSITIVE = true;
 
 static uint64_t load_3(const unsigned char *in) {
   uint64_t result;
@@ -5079,15 +5080,25 @@ __kernel void generate_pubkey(constant uchar *seed, global uchar *out,
 
   for (size_t i = 0; i < suffix_len; i++) {
     /*if (addr[length - suffix_len + i] != SUFFIX[i])*/
-      if (addr[length - suffix_len + i] != SUFFIX[i]  && addr[length - suffix_len + i] != SUFFIX_LOWER[i])
-      return;
-  }
- 
+     if(IGNORE_CASE_SENSITIVE) {   
+        if (addr[length - suffix_len + i] != SUFFIX[i]  && addr[length - suffix_len + i] != SUFFIX_LOWER[i])
+            return;
+     } else {   
+            if (addr[length - suffix_len + i] != SUFFIX[i])
+                return;
+        }
+  } 
   for (size_t i = 0; i < prefix_len; i++) {
     /*if (addr[i] != PREFIX[i])*/
-     if (addr[i] != PREFIX[i] && addr[i] != PREFIX_LOWER[i])
-      return;
+      if(IGNORE_CASE_SENSITIVE) {
+          if (addr[i] != PREFIX[i] && addr[i] != PREFIX_LOWER[i])
+             return;
+      } else {
+            if (addr[i] != PREFIX[i])
+                return;
+        }
   }
+
 
   // assign to out
   if (out[0] == 0) {
