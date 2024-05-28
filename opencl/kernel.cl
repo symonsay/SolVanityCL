@@ -5036,6 +5036,19 @@ static uchar *base58_encode(uchar *in, uint *out_len) {
   return out;
 }
 
+static char *cl_strtolower(constant uchar *input, size_t inputLength, uchar *output) {
+    int maxChars = (inputLength < 256) ? (int)inputLength : 256;
+    for (int i = 0; i < maxChars; i++) {
+        unsigned char c = (unsigned char)input[i];
+        if (c >= 'A' && c <= 'Z') {
+            c += 'a' - 'A';
+        }
+        output[i] = c;
+    }  
+    output[maxChars] = '\0';
+    return output;
+}
+
 __kernel void generate_pubkey(constant uchar *seed, global uchar *out,
                               global uchar *occupied_bytes) {
   uchar public_key[32], private_key[64];
@@ -5058,13 +5071,21 @@ __kernel void generate_pubkey(constant uchar *seed, global uchar *out,
 
   // pattern match
   size_t prefix_len = sizeof(PREFIX), suffix_len = sizeof(SUFFIX);
+  uchar SUFFIX_LOWER[256];
+  uchar PREFIX_LOWER[256];
+
+  cl_strtolower(SUFFIX, suffix_len, SUFFIX_LOWER);
+  cl_strtolower(PREFIX, prefix_len, PREFIX_LOWER);
+
   for (size_t i = 0; i < suffix_len; i++) {
-    if (addr[length - suffix_len + i] != SUFFIX[i])
+    /*if (addr[length - suffix_len + i] != SUFFIX[i])*/
+      if (addr[length - suffix_len + i] != SUFFIX[i]  && addr[length - suffix_len + i] != SUFFIX_LOWER[i])
       return;
   }
-
+ 
   for (size_t i = 0; i < prefix_len; i++) {
-    if (addr[i] != PREFIX[i])
+    /*if (addr[i] != PREFIX[i])*/
+     if (addr[i] != PREFIX[i] && addr[i] != PREFIX_LOWER[i])
       return;
   }
 
