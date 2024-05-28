@@ -243,8 +243,11 @@ def search_pubkey(
         logging.info(f"Found: {pubkey}")
         Path(output_dir).mkdir(parents=True, exist_ok=True)
         Path(output_dir, f"{pubkey}.json").write_text(
-            json.dumps(list(pv_bytes + pb_bytes))
+            secret = list(pv_bytes + pb_bytes)
+            json.dumps(secret)
         )
+        
+        logging.info(f"{public}:{b58encode(bytes(secret)).decode()}")
 
         result_count += 1
 
