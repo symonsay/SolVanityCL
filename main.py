@@ -115,8 +115,9 @@ class Searcher:
         )
 
         cl._enqueue_read_buffer(self.command_queue, memobj_output, output).wait()
-        logging.info(
-            f"Speed: {self.global_work_size[0] / ((time.time() - st) * 10**6):.2f} MH/s"
+        #logging.info(
+        print(
+            f"\tSpeed: {self.global_work_size[0] / ((time.time() - st) * 10**6):.2f} MH/s" , end="\r", flush=True
         )
 
         return output
